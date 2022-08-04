@@ -41,6 +41,7 @@ ult_Preco = mt5.symbol_info_tick(symbol).last
 #****************Dados do ativo**********************************************
 #Dados do ativo
 tabela = wdo_m1
+print(tabela)
 #****************Reset index**********************************************
 tabela.reset_index('time', inplace=True)
 tabela = tabela.drop(["time"], axis=1)
