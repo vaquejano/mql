@@ -3,3 +3,4 @@
 para estudo de mercado.'
 No mesmo projeto usei uma RandomForest para tomada de decicao.
 atualizacao
+Atualizacao com duas floresta
