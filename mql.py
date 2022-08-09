@@ -3,10 +3,12 @@ import MetaTrader5 as mt5
 from datetime import datetime
 import pandas as pd
 import numpy as np
+#****************Modulo sklearn*************************************
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import accuracy_score
 #****************Setando as colunas das planilhas*************************************
 pd.set_option('display.max_columns', 400) # número de colunas mostradas
 pd.set_option('display.width', 1500)      # max. largura máxima da tabela exibida
@@ -41,7 +43,7 @@ ult_Preco = mt5.symbol_info_tick(symbol).last
 #****************Dados do ativo**********************************************
 #Dados do ativo
 tabela = wdo_m1
-print(tabela)
+#print(tabela)
 #****************Reset index**********************************************
 tabela.reset_index('time', inplace=True)
 tabela = tabela.drop(["time"], axis=1)
@@ -55,10 +57,9 @@ tabela.loc[:,'media200'] = (tabela['close'].rolling(200).median())
 #print(tabela)
 #****************Preenche o valor vazio com o valor 0**********************************************
 tabela = tabela.fillna(0)  # preenche o valor vazio com o valor 0
-#print(tabela)
 #****************Separa dados de X e y*********************************************
 X = tabela.drop("close", axis=1)
-y = tabela['close']
+y = tabela['close'].values
 #print(X)
 #print(y)
 #****************Separa dados de trino e dados de teste*********************************************
@@ -78,6 +79,7 @@ floresta.fit(X_treino, y_treino)
 #****************Faco minha predicao **********************************************
 p = floresta.predict(X_teste)
 #print(tabela)
+#print(accuracy_score(y_teste, p))
 #****************Decisao***********************************************
 fl = mean_squared_error(y_teste, p)
 print(f'Floresta------------>>{fl}')
@@ -87,7 +89,8 @@ print(f'Erro medio quadrado->>{ss}')
 #****************Metrica de precisao**********************************************
 r_square = metrics.r2_score(y_teste, p)
 print(f'Metrica------------->>{r_square}')
-
+#****************Acuracia da floresta**********************************************
+#acc = accuracy_score(y_teste, p)
 #****************funcao simples compra e venda**********************************************
 def neg(x):
     if (x >= ult_valor):
@@ -107,5 +110,51 @@ a = neg(flor)
 #****************Negociacao**********************************************
 sm = (fl-ult_valor)
 sm1 = (fl-ult_valor)/100
-print(sm)
+print(sm1)
 print(sm1, "%")
+#****************Operacao de negociacao**********************************************
+print('*'*5,'metrica1'*1,'*'*5)
+
+#<<<<<<<<<<Nova IA >>>>>>>>>>>>>>>>>>>
+x1 = X_teste
+y1 = y_teste
+#****************Treino minha IA**********************************************
+floresta.fit(x1, y1)
+#****************Faco minha predicao **********************************************
+p1 = floresta.predict(x1)
+#print(tabela)
+#print(accuracy_score(y_teste, p))
+#****************Decisao***********************************************
+fl1 = mean_squared_error(y1, p1)
+print(f'Floresta------------>>{fl1}')
+#****************Erro medio quadrado*********************************************
+ss1 = np.sqrt(mean_squared_error(y1, p1))
+print(f'Erro medio quadrado->>{ss1}')
+#****************Metrica de precisao**********************************************
+r_square1 = metrics.r2_score(y1, p1)
+print(f'Metrica------------->>{r_square1}')
+#****************Acuracia da floresta**********************************************
+#acc = accuracy_score(y_teste, p)
+#****************funcao simples compra e venda**********************************************
+def neg(x):
+    if (x >= ult_valor):
+        print("Compra ^")
+        buy = mt5.ORDER_TYPE_BUY
+        return(buy)
+    elif(x <= ult_valor):
+        print('Venda V')
+        sell = mt5.ORDER_TYPE_SELL
+        return(sell)
+flor=(fl)
+
+#****************ultimo valor do tick**********************************************
+ult_valor = ult_Preco
+#****************Valor da condicao BUY e SELL**********************************************
+a = neg(flor)
+#****************Negociacao**********************************************
+sm1 = (fl-ult_valor)
+sm11 = (fl-ult_valor)/100
+print(sm1)
+print(sm11, "%")
+#****************Operacao de negociacao**********************************************
+print('*'*5,'metrica'*1,'*'*5)
