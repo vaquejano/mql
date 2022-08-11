@@ -1,6 +1,9 @@
 #****************Bibliotecas*************************************
+import math
+
 import MetaTrader5 as mt5
 from datetime import datetime
+import time
 import pandas as pd
 import numpy as np
 #****************Modulo sklearn*************************************
@@ -63,10 +66,10 @@ y = tabela['close'].values
 #print(X)
 #print(y)
 #****************Separa dados de trino e dados de teste*********************************************
-X_treino, X_teste, y_treino, y_teste = train_test_split(X, y, test_size=0.2, random_state=42)
+X_treino, X_teste, y_treino, y_teste = train_test_split(X, y, test_size=0.1, random_state=42)
 #****************Seleciono a IA**********************************************
 floresta = RandomForestRegressor(bootstrap=True,
-                                 n_estimators=13,
+                                 n_estimators=100,
                                  min_samples_leaf=5,
                                  max_leaf_nodes=5,
                                  max_depth=30,
@@ -82,23 +85,24 @@ p = floresta.predict(X_teste)
 #print(accuracy_score(y_teste, p))
 #****************Decisao***********************************************
 fl = mean_squared_error(y_teste, p)
-print(f'Floresta------------>>{fl}')
+#print(f'Floresta------------>>{fl}')
 #****************Erro medio quadrado*********************************************
 ss = np.sqrt(mean_squared_error(y_teste, p))
-print(f'Erro medio quadrado->>{ss}')
+#print(f'Erro medio quadrado->>{ss}')
 #****************Metrica de precisao**********************************************
 r_square = metrics.r2_score(y_teste, p)
-print(f'Metrica------------->>{r_square}')
+#print(f'Metrica------------->>{r_square}')
 #****************Acuracia da floresta**********************************************
 #acc = accuracy_score(y_teste, p)
+'''
 #****************funcao simples compra e venda**********************************************
 def neg(x):
     if (x >= ult_valor):
-        print("Compra ^")
+        #print("Compra ^")
         buy = mt5.ORDER_TYPE_BUY
         return(buy)
     elif(x <= ult_valor):
-        print('Venda V')
+       # print('Venda V')
         sell = mt5.ORDER_TYPE_SELL
         return(sell)
 flor=(fl)
@@ -114,7 +118,7 @@ print(sm1)
 print(sm1, "%")
 #****************Operacao de negociacao**********************************************
 print('*'*5,'metrica1'*1,'*'*5)
-
+'''
 #<<<<<<<<<<Nova IA >>>>>>>>>>>>>>>>>>>
 x1 = X_teste
 y1 = y_teste
@@ -126,7 +130,9 @@ p1 = floresta.predict(x1)
 #print(accuracy_score(y_teste, p))
 #****************Decisao***********************************************
 fl1 = mean_squared_error(y1, p1)
+print(f'Ult-Valor----------->>{ult_Preco}')
 print(f'Floresta------------>>{fl1}')
+
 #****************Erro medio quadrado*********************************************
 ss1 = np.sqrt(mean_squared_error(y1, p1))
 print(f'Erro medio quadrado->>{ss1}')
@@ -136,25 +142,135 @@ print(f'Metrica------------->>{r_square1}')
 #****************Acuracia da floresta**********************************************
 #acc = accuracy_score(y_teste, p)
 #****************funcao simples compra e venda**********************************************
-def neg(x):
-    if (x >= ult_valor):
-        print("Compra ^")
-        buy = mt5.ORDER_TYPE_BUY
+def neg(f):
+    if (ult_valor<= f):
+        print('Compra ^')
+        buy = 'mt5.ORDER_TYPE_BUY'
+        lot = 1.0
+        point = mt5.symbol_info(symbol).point
+        price = mt5.symbol_info_tick(symbol).ask
+        deviation = 20
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": lot,
+            "type": mt5.ORDER_TYPE_BUY,
+            "price": price,
+            "sl": price - 5000 * point,
+            "tp": price + 7000 * point,
+            "deviation": deviation,
+            "magic": 234000,
+            "comment": "python script open",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_RETURN,
+        }
+
+        # enviamos a solicitação de negociação
+        result = mt5.order_send(request)
         return(buy)
-    elif(x <= ult_valor):
+    elif(ult_valor >= f):
         print('Venda V')
-        sell = mt5.ORDER_TYPE_SELL
+        sell = 'mt5.ORDER_TYPE_SELL'
+        lot = 1.0
+        point = mt5.symbol_info(symbol).point
+        price = mt5.symbol_info_tick(symbol).bid
+        deviation = 2
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": lot,
+            "type": mt5.ORDER_TYPE_SELL,
+            "price": price,
+            "sl": price + 5000 * point,
+            "tp": price - 5000 * point,
+            "deviation": deviation,
+            "magic": 234000,
+            "comment": "python script open",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_RETURN,
+        }
+
+        # enviamos a solicitação de negociação
+        result = mt5.order_send(request)
         return(sell)
 flor=(fl)
-
 #****************ultimo valor do tick**********************************************
 ult_valor = ult_Preco
 #****************Valor da condicao BUY e SELL**********************************************
-a = neg(flor)
-#****************Negociacao**********************************************
-sm1 = (fl-ult_valor)
-sm11 = (fl-ult_valor)/100
-print(sm1)
-print(sm11, "%")
-#****************Operacao de negociacao**********************************************
-print('*'*5,'metrica'*1,'*'*5)
+a1 = neg(flor)
+print(a1)
+print('*'*15,'metrica'*1,'*'*15)
+
+'''
+lot = 1.0
+point = mt5.symbol_info(symbol).point
+price = mt5.symbol_info_tick(symbol).ask
+deviation = 20
+request = {
+    "action": mt5.TRADE_ACTION_DEAL,
+    "symbol": symbol,
+    "volume": lot,
+    "type": typ,
+    "price": price,
+    "sl": price - 5000 * point,
+    "tp": price + 5000 * point,
+    "deviation": deviation,
+    "magic": 234000,
+    "comment": "python script open",
+    "type_time": mt5.ORDER_TIME_GTC,
+    "type_filling": mt5.ORDER_FILLING_RETURN,
+    }
+
+# enviamos a solicitação de negociação
+result = mt5.order_send(request)
+# verificamos o resultado da execução
+print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation));
+if result.retcode != mt5.TRADE_RETCODE_DONE:
+    print("2. order_send failed, retcode={}".format(result.retcode))
+    # solicitamos o resultado na forma de dicionário e exibimos elemento por elemento
+    result_dict = result._asdict()
+    for field in result_dict.keys():
+        print("   {}={}".format(field, result_dict[field]))
+        # se esta for uma estrutura de uma solicitação de negociação, também a exibiremos elemento a elemento
+        if field == "request":
+            traderequest_dict = result_dict[field]._asdict()
+            for tradereq_filed in traderequest_dict:
+                print("       traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+    print("shutdown() and quit")
+
+lot = 1.0
+point = mt5.symbol_info(symbol).point
+price = mt5.symbol_info_tick(symbol).ask
+deviation = 20
+request = {
+    "action": mt5.TRADE_ACTION_DEAL,
+    "symbol": symbol,
+    "volume": lot,
+    "type": typ,
+    "price": price,
+    "sl": price + 5000 * point,
+    "tp": price - 5000 * point,
+    "deviation": deviation,
+    "magic": 234000,
+    "comment": "python script open",
+    "type_time": mt5.ORDER_TIME_GTC,
+    "type_filling": mt5.ORDER_FILLING_RETURN,
+}
+
+# enviamos a solicitação de negociação
+result = mt5.order_send(request)
+# verificamos o resultado da execução
+print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation));
+if result.retcode != mt5.TRADE_RETCODE_DONE:
+    print("2. order_send failed, retcode={}".format(result.retcode))
+    # solicitamos o resultado na forma de dicionário e exibimos elemento por elemento
+    result_dict = result._asdict()
+    for field in result_dict.keys():
+        print("   {}={}".format(field, result_dict[field]))
+        # se esta for uma estrutura de uma solicitação de negociação, também a exibiremos elemento a elemento
+        if field == "request":
+            traderequest_dict = result_dict[field]._asdict()
+            for tradereq_filed in traderequest_dict:
+                print("       traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+    print("shutdown() and quit")
+'''
